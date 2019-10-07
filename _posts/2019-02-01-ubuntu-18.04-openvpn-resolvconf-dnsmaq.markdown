@@ -1,0 +1,159 @@
+---
+layout: post
+title:  "ubuntu 18.04 bionic: openvpn+resolvconf+dnsmaq"
+date:   2019-02-01 22:00:00
+---
+
+By default ubuntu 18.04 is using systemd-resolve. In order to use openvpn, resolvconf and dnsmasq you need to do following:
+
+Ensure that all necessary packages are installed:
+
+{% highlight bash %}
+apt-get install -y openvpn resolvconf dnsmasq
+{% endhighlight %}
+
+NetworkManager will not control dnsmasq so we need to add following config:
+
+{% highlight bash %}
+echo -e "[main]\ndns=none" > /etc/NetworkManager/conf.d/dnsmasq.conf
+{% endhighlight %}
+
+Disable and stop systemd-resolved:
+
+{% highlight bash %}
+systemctl disable systemd-resolved.service
+systemctl stop systemd-resolved.service
+{% endhighlight %}
+
+Enable and start dnsmasq:
+
+{% highlight bash %}
+systemctl enable dnsmasq.service
+systemctl start dnsmasq.service
+{% endhighlight %}
+
+Network settings including nameservers to use are managed by the NetworkManager. In order for NetworkManager to notify
+resolvconf that settings need to be updated /etc/NetworkManager/dispatcher.d/resolvconf should be added:
+
+{% highlight bash %}
+#!/bin/bash
+
+case "$2" in
+  up)
+    [ -z "$IP4_NAMESERVERS" ] && exit 0
+    for x in $IP4_NAMESERVERS; do
+        echo "nameserver $x" | /sbin/resolvconf -a "$1.networkmanager"
+    done
+    ;;
+  down)
+        /sbin/resolvconf -d "$1.networkmanager"
+    ;;
+  *) exit 0 ;;
+esac
+{% endhighlight %}
+
+Modify /etc/resolvconf/update.d/dnsmasq (please note "openvpn support" comments):
+
+{% highlight bash %}
+#!/bin/sh
+#
+# Script to update the resolver list for dnsmasq
+#
+# N.B. Resolvconf may run us even if dnsmasq is not (yet) running.
+# If dnsmasq is installed then we go ahead and update the resolver list
+# in case dnsmasq is started later.
+#
+# Assumption: On entry, PWD contains the resolv.conf-type files.
+#
+# This file is part of the dnsmasq package.
+#
+
+set -e
+
+RUN_DIR="/run/dnsmasq"
+RSLVRLIST_FILE="${RUN_DIR}/resolv.conf"
+TMP_FILE="${RSLVRLIST_FILE}_new.$$"
+MY_NAME_FOR_RESOLVCONF="dnsmasq"
+
+[ -x /usr/sbin/dnsmasq ] || exit 0
+[ -x /lib/resolvconf/list-records ] || exit 1
+
+PATH=/bin:/sbin
+
+report_err() { echo "$0: Error: $*" >&2 ; }
+
+# Stores arguments (minus duplicates) in RSLT, separated by spaces
+# Doesn't work properly if an argument itself contains whitespace
+uniquify()
+{
+	RSLT=""
+	while [ "$1" ] ; do
+		for E in $RSLT ; do
+			[ "$1" = "$E" ] && { shift ; continue 2 ; }
+		done
+		RSLT="${RSLT:+$RSLT }$1"
+		shift
+	done
+}
+
+if [ ! -d "$RUN_DIR" ] && ! mkdir --parents --mode=0755 "$RUN_DIR" ; then
+	report_err "Failed trying to create directory $RUN_DIR"
+	exit 1
+fi
+
+RSLVCNFFILES=""
+for F in $(/lib/resolvconf/list-records --after "lo.$MY_NAME_FOR_RESOLVCONF") ; do
+	case "$F" in
+	    "lo.$MY_NAME_FOR_RESOLVCONF")
+		# Omit own record	 
+		;;
+	    lo.*)
+		# Include no more records after one for a local nameserver
+		RSLVCNFFILES="${RSLVCNFFILES:+$RSLVCNFFILES }$F"
+		break
+		;;
+          # start of the openvpn support change
+	  *.openvpn)
+		RSLVCNFFILES="$F"
+		break
+		;;
+          # end of the openvpn support change
+	  *)
+		RSLVCNFFILES="${RSLVCNFFILES:+$RSLVCNFFILES }$F"
+		;;
+	esac
+done
+
+NMSRVRS=""
+if [ "$RSLVCNFFILES" ] ; then
+	uniquify $(sed -n -e 's/^[[:space:]]*nameserver[[:space:]]\+//p' $RSLVCNFFILES)
+	NMSRVRS="$RSLT"
+fi
+
+# Dnsmasq uses the mtime of $RSLVRLIST_FILE, with a resolution of one second,
+# to detect changes in the file. This means that if a resolvconf update occurs
+# within one second of the previous one then dnsmasq may fail to notice the
+# more recent change. To work around this problem we sleep one second here
+# if necessary in order to ensure that the new mtime is different.
+if [ -f "$RSLVRLIST_FILE" ] && [ "$(ls -go --time-style='+%s' "$RSLVRLIST_FILE" | { read p h s t n ; echo "$t" ; })" = "$(date +%s)" ] ; then
+	sleep 1
+fi
+
+clean_up() { rm -f "$TMP_FILE" ; }
+trap clean_up EXIT
+: >| "$TMP_FILE"
+for N in $NMSRVRS ; do echo "nameserver $N" >> "$TMP_FILE" ; done
+mv -f "$TMP_FILE" "$RSLVRLIST_FILE"
+{% endhighlight %}
+
+Enable resolvconf:
+
+{% highlight bash %}
+resolvconf -u
+{% endhighlight %}
+
+Restart NetworkManager:
+
+{% highlight bash %}
+service NetworkManager restart
+{% endhighlight %}
