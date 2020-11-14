@@ -13,7 +13,7 @@ connector casing (which is grounded) with another wire. This worked! So next tho
 try [Digispark USB Development Board](http://digistump.com/products/1). I found a very helpful [Little-Wire project](https://github.com/kt97679/Little-Wire) that can
 be used to control pins on the Digispark board. I've created fork of the repository with [yubikey branch](https://github.com/kt97679/Little-Wire/tree/yubikey) and
 [added](https://github.com/kt97679/Little-Wire/commit/6d7d494d06f46f5cc8cc2a08f3e713bf4cf6150a) file [yubikey-touch.c](https://github.com/kt97679/Little-Wire/blob/yubikey/software/examples/yubikey-touch.c)
-based on the examples.
+based on the examples. The idea is to keep pin2 in the high-z (high impedance) state, then switch it to the low level output state and after delay restore high-z state.
 
 
 Here is sample a session:
