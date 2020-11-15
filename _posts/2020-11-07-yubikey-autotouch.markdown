@@ -18,12 +18,12 @@ based on the examples. The idea is to keep pin2 in the high-z (high impedance) s
 
 Here is sample a session:
 {% highlight bash %}
-$ sudo ./yubikey-touch 2500
+kvt@joy:~/git/Little-Wire/software$ sudo ./yubikey-touch 2500
 > 1 Little Wire device is found with serialNumber: 512
 > Little Wire firmware version: 1.3
 eifjcchchfidlvjnvithvhvbkivnbtgrhjfdukvt@joy:~/git/Little-Wire/software$ eifjcchchfidlvjnvithvhvbkivnbtgrhjfduckibnih
 eifjcchchfidlvjnvithvhvbkivnbtgrhjfduckibnih: command not found
-$ 
+kvt@joy:~/git/Little-Wire/software$ 
 {% endhighlight %}
 
 Now you can programatically touch yor yubikey :-)!
