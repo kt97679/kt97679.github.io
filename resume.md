@@ -27,15 +27,15 @@ _2018 - present Twitch, Seattle, USA <http://twitch.tv>_
 
 Senior Infrastructure Systems Engineer
 
-Video Core Services Team: Consul, Puppet, Squid etc
+Video Core Services Team: Consul, Puppet, Squid, DNS, stats and metrics, netbooting, linux packages and repositories, management of hybrid baremetal/AWS environment with over 30k servers.
 
 _2012 - 2018 Hulu, Seattle, USA <http://www.hulu.com>_
 
 Senior Software Developer
 
-Connected Hulu - messaging system to make possible control of one device from another device (nodejs, bash, ruby, haproxy, keepalived, redis, cassandra).
+Connected Hulu team: messaging system to make possible control of one device from another device (nodejs, bash, ruby, haproxy, keepalived, redis, cassandra).
 
-DevOps - DNS, logs, stats and metrics, linux packages and repositories, chroot based builds, salt, chef, management of 8k+ servers.
+DevOps team: DNS, logs, stats and metrics, linux packages and repositories, chroot based builds, salt, chef, management of 9k+ servers.
 
 _2010 - 2012 Microsoft Corporation, Seattle, USA <http://www.microsoft.com>_
 
