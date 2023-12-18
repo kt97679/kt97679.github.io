@@ -23,11 +23,17 @@ Principal position in site reliability, DevOps or software engineering.
 
 ### Work experience
 
-_2018 - present Twitch, Seattle, USA <http://twitch.tv>_
+_2023 - present Susquehanna International Group, LLP (SIG), Philadelphia, USA <http://sig.com>_
+
+Senior systems engineer
+
+Management of the HFT linux infrastructure.
+
+_2018 - 2023 Twitch, Seattle, USA <http://twitch.tv>_
 
 Senior Infrastructure Systems Engineer
 
-Video Core Services Team: Consul, Puppet, Squid, DNS, stats and metrics, netbooting, linux packages and repositories, management of hybrid baremetal/AWS environment with over 30k servers.
+Video Core Services Team: Consul, Puppet, Squid, DNS, stats and metrics, netbooting, linux packages and repositories, management of hybrid baremetal/AWS environment with over 50k servers.
 
 _2012 - 2018 Hulu, Seattle, USA <http://www.hulu.com>_
 
